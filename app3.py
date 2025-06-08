@@ -112,11 +112,27 @@ def main():
     
     # User input
     query = st.text_input("Enter your query:")
-    
+    enhanced_query = ""
     if query:
+        with st.spinner("Enhancing your query"):
+            prompt = f"""
+            We have built a system, that can bring out relevant documents related to the legal domain, based on a user's query.
+            Given a query, enhance it to make it suitable for semantic search. Do not add any extra context or any surrounding words, just give me the enhanced query.
+            The original query is - '{query}'
+            """
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            enhanced_query = response.choices[0].message.content
+            st.write(enhanced_query)
         with st.spinner("Processing your query..."):
             # Get embedding for the query
-            query_vector = get_embedding(query)
+            query_vector = get_embedding(enhanced_query)
             
             # Load embedding IDs
             try:
